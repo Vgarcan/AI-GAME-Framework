@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-game-framework"
+version = "0.1.0"
+description = "A study-focused Python framework for learning AI agent design with Goals, Actions, Memory, and Environment."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Victor Garcia" }
+]
+license = { text = "MIT" }
+keywords = ["ai", "agents", "game-framework", "python", "education"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = []
+
+[tool.setuptools.packages.find]
+include = ["game*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
