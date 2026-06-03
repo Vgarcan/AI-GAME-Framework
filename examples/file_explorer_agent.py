@@ -9,19 +9,31 @@ A = list_files, read_file, terminate
 M = default in-memory run history
 E = default execution environment
 
-The model response is still fake so the example remains deterministic while
-learning. Replace ``generate_response`` only after the local action flow is
+The model provider is ``fake`` by default so the example remains deterministic
+while learning. Change ``MODEL_PROVIDER`` only after the local action flow is
 understood.
 """
 
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from game import Action, ActionRegistry, Agent, Environment, Goal, JsonAgentLanguage
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_MODEL_PROVIDER = "fake"
+
+
+def get_model_provider() -> str:
+    """
+    Return the configured model provider.
+
+    Returns:
+        Lowercase provider name. Defaults to ``fake``.
+    """
+    return os.getenv("MODEL_PROVIDER", DEFAULT_MODEL_PROVIDER).strip().lower()
 
 
 def list_files() -> list[str]:
@@ -75,7 +87,7 @@ def terminate(message: str) -> str:
     return message
 
 
-def generate_response(prompt: str) -> str:
+def generate_fake_response(prompt: str) -> str:
     """
     Fake model response for deterministic learning.
 
@@ -88,9 +100,48 @@ def generate_response(prompt: str) -> str:
     return json.dumps({
         "tool": "terminate",
         "args": {
-            "message": "File explorer example is wired correctly. Replace the fake response to make it interactive."
+            "message": (
+                "File explorer example is wired correctly using "
+                "MODEL_PROVIDER=fake. Add a real provider only after the "
+                "fake action flow works."
+            )
         },
     })
+
+
+def generate_real_response(prompt: str, provider: str) -> str:
+    """
+    Placeholder for real provider integrations.
+
+    Args:
+        prompt: Full prompt built by the agent.
+        provider: Configured provider name.
+
+    Raises:
+        NotImplementedError: Always, until a real provider is added.
+    """
+    raise NotImplementedError(
+        f"MODEL_PROVIDER='{provider}' is not implemented in this example yet. "
+        "Use MODEL_PROVIDER=fake while learning."
+    )
+
+
+def generate_response(prompt: str) -> str:
+    """
+    Generate a response using the configured model provider.
+
+    Args:
+        prompt: Full prompt built by the agent.
+
+    Returns:
+        JSON string selecting one action.
+    """
+    provider = get_model_provider()
+
+    if provider == "fake":
+        return generate_fake_response(prompt)
+
+    return generate_real_response(prompt=prompt, provider=provider)
 
 
 def build_file_explorer_agent() -> Agent:
