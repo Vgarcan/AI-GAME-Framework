@@ -27,6 +27,7 @@ environment, or model response function there.
 from __future__ import annotations
 
 import json
+import logging
 from typing import Any, Callable, Dict, List, Optional
 
 from game.actions import Action, ActionRegistry
@@ -34,6 +35,8 @@ from game.environment import Environment
 from game.goals import Goal
 from game.language import AgentLanguage
 from game.memory import Memory
+
+logger = logging.getLogger(__name__)
 
 
 class Agent:
@@ -147,6 +150,30 @@ class Agent:
             "content": json.dumps(result, ensure_ascii=False),
         })
 
+    def update_error_memory(
+        self,
+        memory: Memory,
+        response: str,
+        error: Exception,
+    ) -> None:
+        """
+        Store a parsing or action-selection error in memory.
+
+        Args:
+            memory: Memory object for this run.
+            response: Raw model response that caused the error.
+            error: Exception raised while parsing or selecting the action.
+        """
+        self.update_memory(
+            memory=memory,
+            response=response,
+            result={
+                "tool_executed": False,
+                "error": str(error),
+                "error_type": error.__class__.__name__,
+            },
+        )
+
     def run(
         self,
         user_input: str,
@@ -169,25 +196,27 @@ class Agent:
         self.set_current_task(memory, user_input)
 
         for iteration in range(1, max_iterations + 1):
-            print(f"\n--- Iteration {iteration} ---")
+            logger.info("Starting agent iteration %s", iteration)
 
             prompt = self.construct_prompt(memory)
-
             response = self.generate_response(prompt)
-            print(f"Agent decision: {response}")
 
-            action, invocation = self.get_action(response)
+            try:
+                action, invocation = self.get_action(response)
+            except ValueError as exc:
+                logger.warning("Agent response could not be executed: %s", exc)
+                self.update_error_memory(memory, response, exc)
+                break
 
             result = self.environment.execute_action(
                 action=action,
                 args=invocation["args"],
             )
-            print(f"Action result: {result}")
 
             self.update_memory(memory, response, result)
 
             if action.terminal:
-                print("Terminal action executed. Stopping agent loop.")
+                logger.info("Terminal action executed. Stopping agent loop.")
                 break
 
         return memory
