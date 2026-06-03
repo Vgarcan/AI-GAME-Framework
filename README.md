@@ -1,6 +1,8 @@
 # GAME Agent Framework Template
 
-A small reusable Python template for building AI agents using the **GAME Framework**.
+This repository is a study guide for learning how to design AI agents with the **GAME Framework**.
+
+The material assumes basic Python knowledge only. You do not need to know the framework in advance.
 
 GAME stands for:
 
@@ -22,7 +24,7 @@ Change the GAME components to create different agents.
 
 ## What this template includes
 
-The file `game_framework_template_commented.py` includes:
+The file `game_framework_template.py` includes:
 
 ```text
 Goal
@@ -49,6 +51,44 @@ Each component has a clear responsibility:
 | `AgentLanguage` | Builds prompts and parses model responses |
 | `Agent` | Runs the reusable agent loop |
 
+The chapter files under `_docs/` are guided builds. They show how to edit the template step by step to create each agent.
+
+---
+
+## Requirements
+
+Before running anything, install Python and the project dependencies.
+
+You will need:
+
+- Python installed on your machine
+- Access to a terminal
+- The packages listed in `requirements.txt`
+
+---
+
+## Installation
+
+From the project root:
+
+```bash
+python -m venv .venv
+```
+
+Activate the virtual environment:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Install the requirements:
+
+```bash
+pip install -r requirements.txt
+```
+
+If your system uses `py` instead of `python`, replace the command accordingly.
+
 ---
 
 ## How to run it
@@ -56,18 +96,33 @@ Each component has a clear responsibility:
 From the terminal:
 
 ```bash
-python game_framework_template_commented.py
+python game_framework_template.py
 ```
 
-The default version does not call a real LLM yet.
+The default version does not call a real LLM yet. Instead, `generate_response()` returns a fake terminal action so you can test the framework safely before connecting a model.
 
-Instead, `generate_response()` returns a fake terminal action so you can test that the framework works.
+---
+
+## How to read the guide
+
+Start with the chapters in `_docs/` in numerical order. Each chapter explains one part of the framework and uses the previous chapter as context.
+
+The study flow is:
+
+```text
+1. Read the chapter
+2. Study the example
+3. Copy the template into a new exercise file
+4. Modify one GAME component at a time
+5. Run the agent and inspect the output
+6. Observe memory to understand the loop
+```
 
 ---
 
 ## How to adapt it
 
-To create a new agent, usually you only need to change:
+To create a new agent, you usually only need to change:
 
 ```text
 1. goals
@@ -177,20 +232,20 @@ Test with fake environments before using real data.
 
 ---
 
-## Suggested next improvements
+## Exercises to try next
 
-Possible improvements:
+Once the first run works, try these study exercises:
 
 ```text
 Add JSON schema validation
 Add persistent memory
-Add Ollama integration
-Add LiteLLM integration
+Connect a real model provider
 Add file-system actions
 Add GitHub actions
 Add Django-specific actions
 Add approval-required actions
 Add tests
+Study the conversation log generator guide
 ```
 
 ---
@@ -200,5 +255,5 @@ Add tests
 Main template:
 
 ```text
-game_framework_template_commented.py
+game_framework_template.py
 ```

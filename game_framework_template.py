@@ -2,16 +2,16 @@
 GAME Framework Template
 =======================
 
-Esqueleto reutilizable para crear agentes usando el GAME Framework.
+Reusable skeleton for building agents with the GAME Framework.
 
 GAME:
-    G = Goals / Objetivos e instrucciones
-    A = Actions / Herramientas disponibles
-    M = Memory / Memoria
-    E = Environment / Entorno de ejecución
+    G = Goals / Instructions
+    A = Actions / Available tools
+    M = Memory / Conversation history
+    E = Environment / Execution environment
 
-Este archivo está pensado como punto de partida para proyectos de estudio,
-POCs o pequeños frameworks internos.
+This file is intended as a starting point for study projects,
+proofs of concept, or small internal frameworks.
 """
 
 from __future__ import annotations
@@ -25,9 +25,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 @dataclass(frozen=True)
 class Goal:
-    """
-    Representa un objetivo o instrucción del agente.
-    """
+    """Represents an agent goal or instruction."""
 
     priority: int
     name: str
@@ -35,9 +33,7 @@ class Goal:
 
 
 class Action:
-    """
-    Representa una herramienta que el agente puede usar.
-    """
+    """Represents a tool the agent can use."""
 
     def __init__(
         self,
@@ -58,15 +54,11 @@ class Action:
         self.terminal = terminal
 
     def execute(self, **args: Any) -> Any:
-        """
-        Ejecuta la función asociada a esta acción.
-        """
+        """Execute the function associated with this action."""
         return self.function(**args)
 
     def to_prompt_schema(self) -> Dict[str, Any]:
-        """
-        Devuelve una representación de la acción para el prompt.
-        """
+        """Return a prompt-friendly representation of the action."""
         return {
             "name": self.name,
             "description": self.description,
@@ -76,51 +68,39 @@ class Action:
 
 
 class ActionRegistry:
-    """
-    Registro central de acciones disponibles para un agente.
-    """
+    """Central registry of actions available to an agent."""
 
     def __init__(self) -> None:
         self._actions: Dict[str, Action] = {}
 
     def register(self, action: Action) -> None:
-        """
-        Añade una acción al registro.
-        """
+        """Add an action to the registry."""
         self._actions[action.name] = action
 
     def get_action(self, name: str) -> Optional[Action]:
-        """
-        Recupera una acción por nombre.
-        """
+        """Return an action by name."""
         return self._actions.get(name)
 
     def get_actions(self) -> List[Action]:
-        """
-        Devuelve todas las acciones registradas.
-        """
+        """Return all registered actions."""
         return list(self._actions.values())
 
 
 class Memory:
-    """
-    Memoria sencilla basada en una lista de mensajes.
-    """
+    """Simple memory backed by a list of messages."""
 
     def __init__(self) -> None:
         self.items: List[Dict[str, str]] = []
 
     def add_memory(self, memory: Dict[str, str]) -> None:
-        """
-        Añade una entrada a la memoria.
-        """
+        """Add one entry to memory."""
         self.items.append(memory)
 
     def get_memories(self, limit: Optional[int] = None) -> List[Dict[str, str]]:
         """
-        Devuelve las memorias guardadas.
+        Return stored memories.
 
-        Si limit tiene valor, devuelve solo las últimas N entradas.
+        If limit is set, return only the last N entries.
         """
         if limit is None:
             return self.items
@@ -129,18 +109,13 @@ class Memory:
 
 
 class Environment:
-    """
-    Ejecuta acciones y devuelve resultados estructurados.
-    """
+    """Executes actions and returns structured results."""
 
     def execute_action(self, action: Action, args: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Ejecuta una acción y captura errores.
-        """
+        """Execute an action and capture any errors."""
         try:
             result = action.execute(**args)
             return self.format_result(result)
-
         except Exception as exc:
             return {
                 "tool_executed": False,
@@ -150,9 +125,7 @@ class Environment:
             }
 
     def format_result(self, result: Any) -> Dict[str, Any]:
-        """
-        Formatea el resultado de una acción.
-        """
+        """Format an action result."""
         return {
             "tool_executed": True,
             "result": result,
@@ -160,16 +133,12 @@ class Environment:
         }
 
     def current_timestamp(self) -> str:
-        """
-        Devuelve una marca temporal.
-        """
+        """Return a timestamp string."""
         return time.strftime("%Y-%m-%dT%H:%M:%S%z")
 
 
 class AgentLanguage:
-    """
-    Clase base para construir prompts y parsear respuestas.
-    """
+    """Base class for building prompts and parsing responses."""
 
     def construct_prompt(
         self,
@@ -186,9 +155,9 @@ class AgentLanguage:
 
 class JsonAgentLanguage(AgentLanguage):
     """
-    Lenguaje simple donde el modelo responde con JSON.
+    Simple language where the model responds with JSON.
 
-    Formato esperado:
+    Expected format:
         {
             "tool": "action_name",
             "args": {}
@@ -247,12 +216,9 @@ Do not include explanations outside the JSON.
 """.strip()
 
     def parse_response(self, response: str) -> Dict[str, Any]:
-        """
-        Convierte la respuesta JSON del modelo en una invocación.
-        """
+        """Convert the model JSON response into an invocation."""
         try:
             invocation = json.loads(response)
-
         except json.JSONDecodeError as exc:
             raise ValueError(
                 f"The model did not return valid JSON. Raw response: {response}"
@@ -271,9 +237,7 @@ Do not include explanations outside the JSON.
 
 
 class Agent:
-    """
-    Agente reutilizable basado en GAME.
-    """
+    """Reusable GAME-based agent."""
 
     def __init__(
         self,
@@ -290,18 +254,14 @@ class Agent:
         self.environment = environment
 
     def set_current_task(self, memory: Memory, task: str) -> None:
-        """
-        Guarda la petición inicial del usuario.
-        """
+        """Store the user's initial request."""
         memory.add_memory({
             "type": "user",
             "content": task,
         })
 
     def construct_prompt(self, memory: Memory) -> str:
-        """
-        Construye el prompt completo para el modelo.
-        """
+        """Build the full prompt for the model."""
         return self.agent_language.construct_prompt(
             goals=self.goals,
             actions=self.actions.get_actions(),
@@ -310,9 +270,7 @@ class Agent:
         )
 
     def get_action(self, response: str) -> tuple[Action, Dict[str, Any]]:
-        """
-        Parsea la respuesta y recupera la acción solicitada.
-        """
+        """Parse the response and retrieve the requested action."""
         invocation = self.agent_language.parse_response(response)
         action_name = invocation["tool"]
 
@@ -329,9 +287,7 @@ class Agent:
         response: str,
         result: Dict[str, Any],
     ) -> None:
-        """
-        Guarda la decisión del agente y el resultado del entorno.
-        """
+        """Store the agent decision and the environment result."""
         memory.add_memory({
             "type": "assistant",
             "content": response,
@@ -348,9 +304,7 @@ class Agent:
         memory: Optional[Memory] = None,
         max_iterations: int = 10,
     ) -> Memory:
-        """
-        Ejecuta el loop principal del agente.
-        """
+        """Run the main agent loop."""
         memory = memory or Memory()
         self.set_current_task(memory, user_input)
 
@@ -380,25 +334,21 @@ class Agent:
 
 
 def say(message: str) -> str:
-    """
-    Acción sencilla de ejemplo.
-    """
+    """Simple example action."""
     return message
 
 
 def terminate(message: str) -> str:
-    """
-    Acción terminal de ejemplo.
-    """
+    """Example terminal action."""
     return message
 
 
 def generate_response(prompt: str) -> str:
     """
-    Placeholder para conectar tu modelo de IA.
+    Placeholder for connecting your AI model.
 
-    Sustituye esta función por una llamada real a Ollama, LiteLLM,
-    OpenAI, Anthropic o tu propio endpoint.
+    Replace this function with a real call to Ollama, LiteLLM,
+    OpenAI, Anthropic, or your own endpoint.
     """
     print("\nPROMPT SENT TO MODEL:")
     print(prompt)
@@ -406,26 +356,27 @@ def generate_response(prompt: str) -> str:
     return json.dumps({
         "tool": "terminate",
         "args": {
-            "message": "Template ejecutado correctamente. Sustituye generate_response por tu cliente LLM."
+            "message": (
+                "Template executed successfully. Replace generate_response "
+                "with your LLM client."
+            )
         }
     })
 
 
 def build_template_agent() -> Agent:
-    """
-    Crea un agente mínimo usando el template.
-    """
+    """Create a minimal agent using the template."""
 
     goals = [
         Goal(
             priority=1,
-            name="Responder al usuario",
-            description="Ayudar al usuario usando las acciones disponibles.",
+            name="Respond to the user",
+            description="Help the user using the available actions.",
         ),
         Goal(
             priority=2,
-            name="Terminar correctamente",
-            description="Usar la acción terminate cuando la tarea esté completada.",
+            name="Terminate correctly",
+            description="Use the terminate action when the task is complete.",
         ),
     ]
 
@@ -434,13 +385,13 @@ def build_template_agent() -> Agent:
     registry.register(Action(
         name="say",
         function=say,
-        description="Devuelve un mensaje al usuario.",
+        description="Return a message to the user.",
         parameters={
             "type": "object",
             "properties": {
                 "message": {
                     "type": "string",
-                    "description": "Mensaje que se devolverá al usuario.",
+                    "description": "Message that will be returned to the user.",
                 }
             },
             "required": ["message"],
@@ -451,13 +402,13 @@ def build_template_agent() -> Agent:
     registry.register(Action(
         name="terminate",
         function=terminate,
-        description="Termina el loop del agente con un mensaje final.",
+        description="End the agent loop with a final message.",
         parameters={
             "type": "object",
             "properties": {
                 "message": {
                     "type": "string",
-                    "description": "Mensaje final para el usuario.",
+                    "description": "Final message for the user.",
                 }
             },
             "required": ["message"],
@@ -477,7 +428,7 @@ def build_template_agent() -> Agent:
 if __name__ == "__main__":
     agent = build_template_agent()
     final_memory = agent.run(
-        user_input="Prueba el agente usando el template GAME.",
+        user_input="Test the agent using the GAME template.",
         max_iterations=5,
     )
 
