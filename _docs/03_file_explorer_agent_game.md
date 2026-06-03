@@ -4,21 +4,33 @@
 
 1. [What you will build](#1-what-you-will-build)
 2. [The AI theory: models need external context](#2-the-ai-theory-models-need-external-context)
-3. [How this exercise uses the template](#3-how-this-exercise-uses-the-template)
-4. [Step 1: copy the template as a working file](#4-step-1-copy-the-template-as-a-working-file)
+3. [How this exercise uses the template and the example folder](#3-how-this-exercise-uses-the-template-and-the-example-folder)
+4. [Step 1: inspect the existing example or copy the template](#4-step-1-inspect-the-existing-example-or-copy-the-template)
 5. [Step 2: rewrite the goals](#5-step-2-rewrite-the-goals)
 6. [Step 3: create the real action functions](#6-step-3-create-the-real-action-functions)
 7. [Step 4: register the actions](#7-step-4-register-the-actions)
 8. [Step 5: keep the environment responsible for execution](#8-step-5-keep-the-environment-responsible-for-execution)
 9. [Step 6: update the fake model response](#9-step-6-update-the-fake-model-response)
 10. [Step 7: run the agent and inspect memory](#10-step-7-run-the-agent-and-inspect-memory)
-11. [What this exercise teaches](#11-what-this-exercise-teaches)
-12. [Common mistakes](#12-common-mistakes)
-13. [Chapter summary](#13-chapter-summary)
+11. [Step 8: compare your version with the repository example](#11-step-8-compare-your-version-with-the-repository-example)
+12. [What this exercise teaches](#12-what-this-exercise-teaches)
+13. [Common mistakes](#13-common-mistakes)
+14. [Chapter summary](#14-chapter-summary)
 
 ## 1. What you will build
 
 In this exercise, you will use `game_framework_template.py` as the starting point for a file explorer agent.
+
+The repository also includes a completed beginner example here:
+
+```text
+examples/file_explorer_agent.py
+```
+
+That means you can study this chapter in two ways:
+
+1. Build the exercise yourself by copying the template.
+2. Inspect the existing example and compare it with the explanation.
 
 The agent should be able to:
 
@@ -68,7 +80,7 @@ GAME represents this idea like this:
 | Observed file results | Memory |
 | Actual file access | Environment |
 
-## 3. How this exercise uses the template
+## 3. How this exercise uses the template and the example folder
 
 The template imports the framework from the `game/` package:
 
@@ -86,22 +98,49 @@ For this exercise, you should not rewrite the framework from zero.
 
 Instead, you adapt these parts:
 
-1. The `goals` list inside `build_template_agent()`.
-2. The example action functions near the bottom of the file.
+1. The `goals` list inside the builder function.
+2. The action functions.
 3. The `registry.register(...)` calls.
 4. The fake `generate_response()` function used for testing.
 5. The `user_input` inside the `__main__` block.
 
 The `Agent.run()` method in `game/agent.py` should stay the same.
 
-## 4. Step 1: copy the template as a working file
+The existing example in `examples/file_explorer_agent.py` shows one clean implementation of this exercise. Treat it as a reference solution, not as the only possible answer.
+
+## 4. Step 1: inspect the existing example or copy the template
+
+There are two valid ways to study this chapter.
+
+### Option A: inspect the existing example
+
+Open:
+
+```text
+examples/file_explorer_agent.py
+```
+
+Read it from top to bottom and identify the GAME components:
+
+1. Goals.
+2. Actions.
+3. Memory.
+4. Environment.
+
+Then run it:
+
+```bash
+python examples/file_explorer_agent.py
+```
+
+### Option B: build your own version
 
 Keep the original template as a reference.
 
 Create a new file for this exercise, for example:
 
 ```text
-file_explorer_agent.py
+my_file_explorer_agent.py
 ```
 
 Then copy the contents of `game_framework_template.py` into that file.
@@ -110,7 +149,19 @@ This gives you a safe place to modify the agent while preserving the base templa
 
 ## 5. Step 2: rewrite the goals
 
-Find `build_template_agent()`.
+Find the builder function.
+
+In the template it is called:
+
+```text
+build_template_agent()
+```
+
+In your copied file, you may rename it to something clearer, such as:
+
+```text
+build_file_explorer_agent()
+```
 
 Inside that function, replace the generic goals with goals for filesystem exploration.
 
@@ -176,6 +227,8 @@ This is where the model learns how to call your tools. If the schema is unclear,
 
 Think of the action schema as the interface between natural language reasoning and Python execution.
 
+The current framework also performs lightweight argument validation. It checks that required arguments exist and rejects unexpected arguments when a schema defines known properties.
+
 ## 8. Step 5: keep the environment responsible for execution
 
 Do not put filesystem logic inside `Agent.run()`.
@@ -238,15 +291,35 @@ Run the file from the terminal.
 
 Watch three things:
 
-1. The prompt sent to the model.
-2. The selected action.
-3. The final memory entries.
+1. The prompt sent to the model if your exercise version prints it.
+2. The selected action stored in memory.
+3. The environment result stored in memory.
 
 The memory should show the user request, the model decision, and the environment result.
 
 This is where the exercise becomes concrete: you can see how external context enters the agent through actions and becomes available for future decisions through memory.
 
-## 11. What this exercise teaches
+## 11. Step 8: compare your version with the repository example
+
+After building your own version, compare it with:
+
+```text
+examples/file_explorer_agent.py
+```
+
+Look for these differences:
+
+1. Did you use clear goals?
+2. Did your action names match your JSON responses?
+3. Did your schemas match your Python function arguments?
+4. Did your `terminate` action use `terminal=True`?
+5. Did your file-reading action include any path safety checks?
+
+The goal of comparing is not to make both files identical.
+
+The goal is to understand which parts are essential to the agent pattern and which parts are implementation choices.
+
+## 12. What this exercise teaches
 
 This exercise teaches the first practical GAME pattern:
 
@@ -260,7 +333,7 @@ The AI concept is controlled perception.
 
 The model cannot see the project by itself. The agent gives it a safe way to request observations.
 
-## 12. Common mistakes
+## 13. Common mistakes
 
 Common mistakes in this exercise include:
 
@@ -270,13 +343,16 @@ Common mistakes in this exercise include:
 4. Trying to test every action at once.
 5. Letting the agent read arbitrary paths before adding safety rules.
 6. Assuming the model knows the filesystem without tool results.
+7. Forgetting to run tests after changing framework code.
 
 Keep the first version small. Once the basic loop works, safety and extra actions become easier to add.
 
-## 13. Chapter summary
+## 14. Chapter summary
 
 The file explorer agent is the first full template adaptation.
 
-You start with `game_framework_template.py`, copy it into a new exercise file, rewrite the goals, add filesystem action functions, register those actions, test fake model responses, and inspect memory. The reusable framework stays in `game/`.
+You can either build it yourself from `game_framework_template.py` or inspect the existing implementation in `examples/file_explorer_agent.py`.
+
+The reusable framework stays in `game/`.
 
 This chapter teaches that agents are not powerful because the model magically knows everything. They become useful when the system gives the model controlled access to the right information.
