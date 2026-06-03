@@ -1,0 +1,11 @@
+# Optional AI provider dependencies
+#
+# Install this file only when you are ready to connect the framework to a
+# real model provider such as OpenAI, LiteLLM, Ollama-compatible services,
+# or another HTTP-based AI endpoint.
+
+litellm>=1.83,<2.0
+openai>=2.30,<3.0
+python-dotenv>=1.0,<2.0
+requests>=2.34,<3.0
+tiktoken>=0.12,<1.0
