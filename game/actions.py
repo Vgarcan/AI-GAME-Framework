@@ -73,6 +73,40 @@ class Action:
         }
         self.terminal = terminal
 
+    def validate_args(self, args: Dict[str, Any]) -> None:
+        """
+        Validate action arguments using a small JSON-schema-like subset.
+
+        This method intentionally stays lightweight for students. It checks
+        that required fields are present and that no unexpected argument is
+        passed when ``properties`` is defined. More advanced projects can
+        replace this with the ``jsonschema`` package.
+
+        Args:
+            args: Parsed arguments requested by the model.
+
+        Raises:
+            ValueError: If required arguments are missing or unknown
+                arguments are provided.
+        """
+        properties = self.parameters.get("properties", {})
+        required = self.parameters.get("required", [])
+
+        missing = [name for name in required if name not in args]
+        if missing:
+            raise ValueError(
+                f"Missing required argument(s) for action '{self.name}': "
+                f"{', '.join(missing)}"
+            )
+
+        if properties:
+            unknown = [name for name in args if name not in properties]
+            if unknown:
+                raise ValueError(
+                    f"Unknown argument(s) for action '{self.name}': "
+                    f"{', '.join(unknown)}"
+                )
+
     def execute(self, **args: Any) -> Any:
         """
         Execute the wrapped Python function.
@@ -83,6 +117,7 @@ class Action:
         Returns:
             Whatever the wrapped function returns.
         """
+        self.validate_args(args)
         return self.function(**args)
 
     def to_prompt_schema(self) -> Dict[str, Any]:
@@ -118,7 +153,13 @@ class ActionRegistry:
 
         Args:
             action: The ``Action`` object to make available to the agent.
+
+        Raises:
+            ValueError: If another action with the same name already exists.
         """
+        if action.name in self._actions:
+            raise ValueError(f"Action already registered: {action.name}")
+
         self._actions[action.name] = action
 
     def get_action(self, name: str) -> Optional[Action]:
