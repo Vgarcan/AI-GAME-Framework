@@ -71,4 +71,5 @@ def test_agent_stores_response_error_in_memory() -> None:
 
     assert len(memories) == 3
     assert memories[-1]["type"] == "environment"
-    assert "JSONDecodeError" in memories[-1]["content"]
+    assert "ValueError" in memories[-1]["content"]
+    assert "valid JSON" in memories[-1]["content"]
