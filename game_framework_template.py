@@ -3,7 +3,7 @@ Minimal GAME agent template.
 
 Copy this file when starting a new exercise agent. The reusable framework
 classes live in the ``game`` package; this file only shows how to assemble
-one agent by defining goals, actions, a model response function, and a
+one agent by defining goals, actions, a model provider selector, and a
 small runnable entry point.
 
 Typical exercise workflow:
@@ -11,13 +11,14 @@ Typical exercise workflow:
     2. Replace the goals.
     3. Replace or add action functions.
     4. Register the new actions.
-    5. Test with fake JSON responses in ``generate_response``.
-    6. Connect a real model only after the fake flow works.
+    5. Keep ``MODEL_PROVIDER=fake`` while testing the action flow.
+    6. Change the provider only after the fake flow works.
 """
 
 from __future__ import annotations
 
 import json
+import os
 
 from game import (
     Action,
@@ -27,6 +28,37 @@ from game import (
     Goal,
     JsonAgentLanguage,
 )
+
+
+DEFAULT_MODEL_PROVIDER = "fake"
+
+
+def get_model_provider() -> str:
+    """
+    Return the configured model provider.
+
+    The template defaults to ``fake`` so students can test the agent loop
+    without setting API keys or running a local model server.
+
+    Returns:
+        Lowercase provider name, such as ``fake``, ``ollama``, ``openai``,
+        ``litellm``, or ``local_http``.
+    """
+    return os.getenv("MODEL_PROVIDER", DEFAULT_MODEL_PROVIDER).strip().lower()
+
+
+def should_show_model_prompt() -> bool:
+    """
+    Return whether the full prompt should be printed while learning.
+
+    This is separate from provider selection. ``MODEL_PROVIDER`` decides
+    where the response comes from. ``SHOW_MODEL_PROMPT`` only controls
+    whether the prompt is printed for inspection.
+
+    Returns:
+        ``True`` when ``SHOW_MODEL_PROMPT=true`` is set in the environment.
+    """
+    return os.getenv("SHOW_MODEL_PROMPT", "false").strip().lower() == "true"
 
 
 def say(message: str) -> str:
@@ -61,35 +93,71 @@ def terminate(message: str) -> str:
     return message
 
 
-def generate_response(prompt: str) -> str:
+def generate_fake_response(prompt: str) -> str:
     """
-    Fake model response used while learning the framework.
+    Return a deterministic fake model response for learning.
 
     Args:
         prompt: Full prompt built by the agent language layer.
 
     Returns:
         JSON string representing the selected tool invocation.
-
-    Replace this function with a real call to Ollama, LiteLLM, OpenAI,
-    Anthropic, or your own endpoint when the local flow works.
-
-    Example:
-        A real implementation still needs to return a JSON string like:
-        ``{"tool": "terminate", "args": {"message": "Done."}}``
     """
-    print("\nPROMPT SENT TO MODEL:")
-    print(prompt)
+    if should_show_model_prompt():
+        print("\nPROMPT SENT TO MODEL:")
+        print(prompt)
 
     return json.dumps({
         "tool": "terminate",
         "args": {
             "message": (
-                "Template executed successfully. Replace generate_response "
-                "with your LLM client."
+                "Template executed successfully using MODEL_PROVIDER=fake. "
+                "Change MODEL_PROVIDER only after the fake action flow works."
             )
         },
     })
+
+
+def generate_real_response(prompt: str, provider: str) -> str:
+    """
+    Placeholder for real model provider integrations.
+
+    Args:
+        prompt: Full prompt built by the agent language layer.
+        provider: Configured model provider name.
+
+    Returns:
+        JSON string representing the selected tool invocation.
+
+    Raises:
+        NotImplementedError: Always, until a real provider client is added.
+    """
+    raise NotImplementedError(
+        f"MODEL_PROVIDER='{provider}' is not implemented in this template yet. "
+        "Use MODEL_PROVIDER=fake while learning, or add a real provider client."
+    )
+
+
+def generate_response(prompt: str) -> str:
+    """
+    Generate a model response using the configured provider.
+
+    The template uses ``MODEL_PROVIDER=fake`` by default. This keeps the
+    agent loop deterministic while learning. After the fake action flow
+    works, add a real provider implementation and change ``MODEL_PROVIDER``.
+
+    Args:
+        prompt: Full prompt built by the agent language layer.
+
+    Returns:
+        JSON string representing the selected tool invocation.
+    """
+    provider = get_model_provider()
+
+    if provider == "fake":
+        return generate_fake_response(prompt)
+
+    return generate_real_response(prompt=prompt, provider=provider)
 
 
 def build_template_agent() -> Agent:
@@ -97,8 +165,8 @@ def build_template_agent() -> Agent:
     Create a minimal runnable agent using the GAME framework.
 
     This is the main function to adapt in the exercises. Most beginner
-    agents can be built by changing this function, adding action
-    functions, and editing ``generate_response`` for testing.
+    agents can be built by changing this function, adding action functions,
+    and keeping ``MODEL_PROVIDER=fake`` until the local action flow works.
 
     Returns:
         Configured ``Agent`` instance.
