@@ -72,6 +72,13 @@ The editable starter file is:
 game_framework_template.py
 ```
 
+The example agents live in:
+
+```text
+examples/
+  file_explorer_agent.py
+```
+
 The framework modules provide the reusable GAME pieces:
 
 | Component | Purpose |
@@ -94,9 +101,19 @@ Before running anything, install Python and the project dependencies.
 
 You will need:
 
-1. Python installed on your machine.
+1. Python 3.10 or newer.
 2. Access to a terminal.
-3. The packages listed in `requirements.txt`.
+3. The packages listed in the requirements files only when you need them.
+
+The core framework currently uses only the Python standard library. This keeps the beginner template simple.
+
+Optional dependency files are separated by purpose:
+
+| File | Purpose |
+|---|---|
+| `requirements.txt` | Minimal core runtime file |
+| `requirements-ai.txt` | Optional model-provider dependencies, such as LiteLLM and OpenAI |
+| `requirements-dev.txt` | Development tools, such as pytest, ruff, and mypy |
 
 ---
 
@@ -126,10 +143,22 @@ Or activate it in Command Prompt:
 .\.venv\Scripts\activate
 ```
 
-Install the requirements:
+Install the project in editable mode:
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
+```
+
+Install optional AI dependencies only when you are ready to connect a real model provider:
+
+```bash
+pip install -r requirements-ai.txt
+```
+
+Install development dependencies when you want to run tests or quality checks:
+
+```bash
+pip install -r requirements-dev.txt
 ```
 
 Create your local environment file when you are ready to connect a real model provider:
@@ -155,6 +184,60 @@ python game_framework_template.py
 The default version does not call a real LLM yet.
 
 Instead, `generate_response()` returns a fake model response. This is intentional. It lets you understand the agent loop before adding the uncertainty of a real model.
+
+---
+
+## How To Run The Example Agent
+
+The repository also includes a small example agent:
+
+```bash
+python examples/file_explorer_agent.py
+```
+
+This example shows how to reuse the same agent loop while changing the GAME components around it.
+
+---
+
+## How To Run Tests
+
+Install the development dependencies first:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Then run:
+
+```bash
+pytest
+```
+
+The tests cover:
+
+1. Action execution and argument validation.
+2. Action registry duplicate protection.
+3. JSON response parsing.
+4. Environment success and error payloads.
+5. Agent terminal behaviour and invalid-response handling.
+
+---
+
+## Code Quality Commands
+
+After installing development dependencies, you can run:
+
+```bash
+ruff check .
+```
+
+And:
+
+```bash
+mypy game
+```
+
+These commands help keep the framework clean as it grows.
 
 ---
 
@@ -312,3 +395,28 @@ Study guide:
 ```text
 _docs/
 ```
+
+Tests:
+
+```text
+tests/
+```
+
+Examples:
+
+```text
+examples/
+```
+
+---
+
+## Roadmap
+
+Possible next improvements:
+
+1. Add an Ollama integration example.
+2. Add a LiteLLM integration example.
+3. Add a stricter environment for file-system safety.
+4. Add persistent memory using JSON files.
+5. Add a CLI with `typer` after the core learning flow is stable.
+6. Add GitHub Actions to run tests automatically on every push.
