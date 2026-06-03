@@ -2,18 +2,19 @@
 
 ## Table of Contents
 
-1. What you will build
-2. How this exercise uses the template
-3. Step 1: copy the template as a working file
-4. Step 2: rewrite the goals
-5. Step 3: create the real action functions
-6. Step 4: register the actions
-7. Step 5: keep the environment responsible for execution
-8. Step 6: update the fake model response
-9. Step 7: run the agent and inspect memory
-10. What this exercise teaches
-11. Common mistakes
-12. Chapter summary
+1. [What you will build](#1-what-you-will-build)
+2. [The AI theory: models need external context](#2-the-ai-theory-models-need-external-context)
+3. [How this exercise uses the template](#3-how-this-exercise-uses-the-template)
+4. [Step 1: copy the template as a working file](#4-step-1-copy-the-template-as-a-working-file)
+5. [Step 2: rewrite the goals](#5-step-2-rewrite-the-goals)
+6. [Step 3: create the real action functions](#6-step-3-create-the-real-action-functions)
+7. [Step 4: register the actions](#7-step-4-register-the-actions)
+8. [Step 5: keep the environment responsible for execution](#8-step-5-keep-the-environment-responsible-for-execution)
+9. [Step 6: update the fake model response](#9-step-6-update-the-fake-model-response)
+10. [Step 7: run the agent and inspect memory](#10-step-7-run-the-agent-and-inspect-memory)
+11. [What this exercise teaches](#11-what-this-exercise-teaches)
+12. [Common mistakes](#12-common-mistakes)
+13. [Chapter summary](#13-chapter-summary)
 
 ## 1. What you will build
 
@@ -26,9 +27,48 @@ The agent should be able to:
 3. Return the result in a structured way.
 4. Stop when the user request has been answered.
 
-The purpose is not to create a perfect filesystem assistant. The purpose is to practice changing the GAME components while leaving the main agent loop stable.
+The purpose is not to create a perfect filesystem assistant. The purpose is to understand one of the most important AI agent ideas: a model cannot use information it cannot see.
 
-## 2. How this exercise uses the template
+## 2. The AI theory: models need external context
+
+A language model does not automatically see your filesystem.
+
+If you ask:
+
+```text
+What files are in this project?
+```
+
+the model needs a way to obtain that information.
+
+It can guess from general knowledge, but guessing is not agency. For an agent to work with real project state, the system must expose controlled tools such as:
+
+```text
+list_files
+read_file
+search_in_file
+```
+
+These tools give the model a controlled form of perception.
+
+The model does not directly browse your computer. Instead, it selects a tool. The environment executes that tool and returns an observation. The next prompt can include that observation, which gives the model better context for the next decision.
+
+This is the key AI lesson in this chapter:
+
+```text
+Agents extend a model by giving it controlled access to external information.
+```
+
+GAME represents this idea like this:
+
+| AI concept | GAME component |
+|---|---|
+| The task purpose | Goals |
+| Filesystem abilities | Actions |
+| Observed file results | Memory |
+| Actual file access | Environment |
+
+## 3. How this exercise uses the template
 
 The template imports the framework from the `game/` package:
 
@@ -54,7 +94,7 @@ Instead, you adapt these parts:
 
 The `Agent.run()` method in `game/agent.py` should stay the same.
 
-## 3. Step 1: copy the template as a working file
+## 4. Step 1: copy the template as a working file
 
 Keep the original template as a reference.
 
@@ -68,7 +108,7 @@ Then copy the contents of `game_framework_template.py` into that file.
 
 This gives you a safe place to modify the agent while preserving the base template and the reusable `game/` package.
 
-## 4. Step 2: rewrite the goals
+## 5. Step 2: rewrite the goals
 
 Find `build_template_agent()`.
 
@@ -82,11 +122,11 @@ Goal 2: Read only files that are useful for the user request.
 Goal 3: Stop when the requested information has been provided.
 ```
 
-These goals teach the agent what kind of behavior matters.
+These goals teach the model what kind of behavior matters.
 
 The important idea is this: goals are not just labels. They shape the prompt that the model sees, so they influence which action the model chooses next.
 
-## 5. Step 3: create the real action functions
+## 6. Step 3: create the real action functions
 
 The template starts with simple example functions such as `say()` and `terminate()`.
 
@@ -104,9 +144,19 @@ The function responsibilities should stay small:
 2. `read_file(file_name)` returns the contents of one file.
 3. `terminate(message)` returns the final message.
 
-At this stage, avoid making one function do too much. A common beginner mistake is creating one large function that lists, reads, summarizes, and stops. That hides the agent loop instead of teaching it.
+At this stage, avoid making one function do too much.
 
-## 6. Step 4: register the actions
+A common beginner mistake is creating one large function that lists, reads, summarizes, and stops. That hides the agent loop instead of teaching it.
+
+The model should learn to move step by step:
+
+```text
+Need project context -> list files.
+Need file content -> read file.
+Have enough information -> terminate.
+```
+
+## 7. Step 4: register the actions
 
 After the functions exist, register them in the `ActionRegistry`.
 
@@ -124,7 +174,9 @@ For example, `list_files` does not need arguments, so its schema can have an emp
 
 This is where the model learns how to call your tools. If the schema is unclear, the model is more likely to send the wrong arguments.
 
-## 7. Step 5: keep the environment responsible for execution
+Think of the action schema as the interface between natural language reasoning and Python execution.
+
+## 8. Step 5: keep the environment responsible for execution
 
 Do not put filesystem logic inside `Agent.run()`.
 
@@ -136,9 +188,13 @@ model chooses action -> registry finds action -> environment executes action
 
 The environment is the execution boundary. It calls the selected action and formats the result.
 
-For this first version, the default `Environment` class is enough. Later, you can create a stricter environment that limits which directory the agent can read.
+For this first version, the default `Environment` class is enough.
 
-## 8. Step 6: update the fake model response
+Later, you can create a stricter environment that limits which directory the agent can read.
+
+This matters because filesystem access is real external access. Even a learning project should develop the habit of keeping execution controlled.
+
+## 9. Step 6: update the fake model response
 
 The copied agent file uses `generate_response()` as a fake model call.
 
@@ -168,7 +224,7 @@ Finally, test `terminate`.
 
 Testing one action at a time makes it much easier to understand how the registry, environment, and memory connect.
 
-## 9. Step 7: run the agent and inspect memory
+## 10. Step 7: run the agent and inspect memory
 
 Update the `user_input` in the `__main__` block.
 
@@ -186,9 +242,11 @@ Watch three things:
 2. The selected action.
 3. The final memory entries.
 
-The memory should show the user request, the model decision, and the environment result. This is where the exercise becomes concrete: you can see GAME working step by step.
+The memory should show the user request, the model decision, and the environment result.
 
-## 10. What this exercise teaches
+This is where the exercise becomes concrete: you can see how external context enters the agent through actions and becomes available for future decisions through memory.
+
+## 11. What this exercise teaches
 
 This exercise teaches the first practical GAME pattern:
 
@@ -198,9 +256,11 @@ This exercise teaches the first practical GAME pattern:
 4. Environment executes the selected action.
 5. The loop stays reusable.
 
-The key lesson is that you created a new agent mostly by changing the components around the loop, not by rewriting the loop itself.
+The AI concept is controlled perception.
 
-## 11. Common mistakes
+The model cannot see the project by itself. The agent gives it a safe way to request observations.
+
+## 12. Common mistakes
 
 Common mistakes in this exercise include:
 
@@ -209,13 +269,14 @@ Common mistakes in this exercise include:
 3. Giving `read_file` a schema that does not match the function argument.
 4. Trying to test every action at once.
 5. Letting the agent read arbitrary paths before adding safety rules.
+6. Assuming the model knows the filesystem without tool results.
 
 Keep the first version small. Once the basic loop works, safety and extra actions become easier to add.
 
-## 12. Chapter summary
+## 13. Chapter summary
 
 The file explorer agent is the first full template adaptation.
 
 You start with `game_framework_template.py`, copy it into a new exercise file, rewrite the goals, add filesystem action functions, register those actions, test fake model responses, and inspect memory. The reusable framework stays in `game/`.
 
-That process is the central habit of this guide: use GAME to understand what changes and what stays stable.
+This chapter teaches that agents are not powerful because the model magically knows everything. They become useful when the system gives the model controlled access to the right information.

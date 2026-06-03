@@ -2,19 +2,21 @@
 
 ## Table of Contents
 
-1. What you will build
-2. Why this agent is more open-ended
-3. Step 1: create a new working file
-4. Step 2: rewrite the goals for transcript processing
-5. Step 3: define the transcript actions
-6. Step 4: design memory for user priorities
-7. Step 5: decide what the environment handles
-8. Step 6: design the log structure
-9. Step 7: test the process in stages
-10. How the agent decides what matters
-11. What this exercise teaches
-12. Common mistakes
-13. Chapter summary
+1. [What you will build](#1-what-you-will-build)
+2. [The AI theory: summarization is not the same as structured extraction](#2-the-ai-theory-summarization-is-not-the-same-as-structured-extraction)
+3. [Why this agent is more open-ended](#3-why-this-agent-is-more-open-ended)
+4. [Step 1: create a new working file](#4-step-1-create-a-new-working-file)
+5. [Step 2: rewrite the goals for transcript processing](#5-step-2-rewrite-the-goals-for-transcript-processing)
+6. [Step 3: define the transcript actions](#6-step-3-define-the-transcript-actions)
+7. [Step 4: design memory for user priorities](#7-step-4-design-memory-for-user-priorities)
+8. [Step 5: decide what the environment handles](#8-step-5-decide-what-the-environment-handles)
+9. [Step 6: design the log structure](#9-step-6-design-the-log-structure)
+10. [Step 7: test the process in stages](#10-step-7-test-the-process-in-stages)
+11. [How the agent decides what matters](#11-how-the-agent-decides-what-matters)
+12. [Working with long transcripts](#12-working-with-long-transcripts)
+13. [What this exercise teaches](#13-what-this-exercise-teaches)
+14. [Common mistakes](#14-common-mistakes)
+15. [Chapter summary](#15-chapter-summary)
 
 ## 1. What you will build
 
@@ -24,7 +26,50 @@ The agent receives transcript-like input and creates a structured log. The log s
 
 This is not just a summarizer. A summarizer compresses text. A log generator organizes a conversation around a purpose.
 
-## 2. Why this agent is more open-ended
+## 2. The AI theory: summarization is not the same as structured extraction
+
+When people first use language models with transcripts, they often ask for a summary.
+
+That can be useful, but it is not always enough.
+
+A summary usually asks:
+
+```text
+What is the shorter version of this text?
+```
+
+A conversation log asks:
+
+```text
+Which parts of this conversation matter for a specific purpose?
+```
+
+That difference changes the agent design.
+
+The model needs to know what to extract, not just what to shorten.
+
+For example, the same transcript can produce different logs:
+
+| User priority | What the agent should preserve |
+|---|---|
+| Decisions | Agreements, tradeoffs, reasons |
+| Action items | Tasks, owners, deadlines |
+| Risks | Blockers, uncertainty, warnings |
+| Open questions | Unresolved points, missing information |
+| Research insights | Themes, observations, repeated signals |
+
+This is why user priorities must be part of the prompt and memory.
+
+GAME represents this idea like this:
+
+| AI concept | GAME component |
+|---|---|
+| Purpose of the log | Goals |
+| Transcript processing steps | Actions |
+| User priorities and extracted points | Memory |
+| Loading, chunking, and saving text | Environment |
+
+## 3. Why this agent is more open-ended
 
 The previous agents had clearer workflows.
 
@@ -40,7 +85,9 @@ That means the agent must handle two inputs:
 
 This makes memory and prompt design more important than in the earlier exercises.
 
-## 3. Step 1: create a new working file
+The agent should not assume that every user wants the same kind of log.
+
+## 4. Step 1: create a new working file
 
 Create a new file for this project, for example:
 
@@ -60,7 +107,7 @@ You will adapt the same parts as before:
 
 The `Agent.run()` loop from `game/agent.py` should still remain stable.
 
-## 4. Step 2: rewrite the goals for transcript processing
+## 5. Step 2: rewrite the goals for transcript processing
 
 Find `build_template_agent()`.
 
@@ -75,7 +122,9 @@ Goal 4: Stop when the log is complete and readable.
 
 These goals matter because this agent must judge relevance. It should not treat every sentence in the transcript as equally important.
 
-## 5. Step 3: define the transcript actions
+The goals also remind the model that the output is a log, not a generic summary.
+
+## 6. Step 3: define the transcript actions
 
 A useful first action set is:
 
@@ -97,9 +146,11 @@ Each action should have one clear job:
 5. `finalize_log` prepares the final output.
 6. `terminate` ends the loop with a final message.
 
-Do not make one action do the entire job. This project is useful because it shows a multi-step information workflow.
+Do not make one action do the entire job.
 
-## 6. Step 4: design memory for user priorities
+This project is useful because it shows a multi-step information workflow. Breaking the work into actions makes it possible to inspect and improve each step.
+
+## 7. Step 4: design memory for user priorities
 
 This agent needs to remember more than raw transcript text.
 
@@ -117,7 +168,9 @@ For example, if the user says they care about decisions and follow-up tasks, the
 
 Without memory, the agent may drift back into generic summarization.
 
-## 7. Step 5: decide what the environment handles
+This is a real AI design issue: models are sensitive to the context they receive. If the user's priorities disappear from the prompt, the model may stop optimizing for them.
+
+## 8. Step 5: decide what the environment handles
 
 The environment should handle practical operations, not reasoning.
 
@@ -134,7 +187,9 @@ The environment performs the real operation and returns the result.
 
 That separation keeps the workflow understandable.
 
-## 8. Step 6: design the log structure
+It also prevents the prompt from carrying unnecessary operational details. The model should reason about the content and structure of the log. The environment should handle file and text operations.
+
+## 9. Step 6: design the log structure
 
 The log structure should match the user's priorities.
 
@@ -152,12 +207,16 @@ Follow-up notes
 The structure should be readable and easy to scan.
 
 If the user cares about accountability, include owners or responsible people.
+
 If the user cares about research insights, include themes and observations.
+
 If the user cares about project management, include tasks, deadlines, and blockers.
 
 This is where the agent becomes flexible without becoming vague.
 
-## 9. Step 7: test the process in stages
+The model should not invent a structure randomly. The structure should come from the user's priorities, the goals, and the action descriptions.
+
+## 10. Step 7: test the process in stages
 
 Use the fake `generate_response()` function to test one action at a time.
 
@@ -179,13 +238,21 @@ Create a conversation log from this transcript. Focus on decisions, action items
 
 Inspect memory after each run. You should be able to see the transcript input, the focus points, the extracted material, and the draft result.
 
-## 10. How the agent decides what matters
+## 11. How the agent decides what matters
 
 The most important design choice is how the agent judges relevance.
 
-The agent should not ask, "What is the shortest summary?"
+The agent should not ask:
 
-It should ask, "Which parts of this transcript match the user's priorities?"
+```text
+What is the shortest summary?
+```
+
+It should ask:
+
+```text
+Which parts of this transcript match the user's priorities?
+```
 
 For example:
 
@@ -196,7 +263,26 @@ For example:
 
 This is why the user's priorities must be visible in the prompt and preserved in memory.
 
-## 11. What this exercise teaches
+## 12. Working with long transcripts
+
+Long transcripts introduce another AI concept: context limits.
+
+A model can only process a limited amount of text at once. Even when the limit is large, too much irrelevant text can reduce the quality of the result.
+
+A practical workflow is:
+
+1. Load the transcript.
+2. Split it into manageable chunks.
+3. Extract relevant points from each chunk.
+4. Merge extracted points.
+5. Draft the final log from the merged material.
+6. Revise the log against the user's priorities.
+
+This is why chunking can belong in the environment while relevance decisions belong in the model-facing workflow.
+
+The agent should not simply throw a huge transcript into one prompt and hope for the best.
+
+## 13. What this exercise teaches
 
 This final project teaches how to use GAME for a less rigid workflow.
 
@@ -208,9 +294,11 @@ In this agent:
 4. Environment handles loading, chunking, and saving.
 5. The loop coordinates extraction, drafting, revision, and finalization.
 
-The same modular template still works, but the design choices are more subtle.
+The AI concept is relevance management.
 
-## 12. Common mistakes
+The model needs explicit criteria for what matters, and the system needs to preserve those criteria across the workflow.
+
+## 14. Common mistakes
 
 Common mistakes in this project include:
 
@@ -220,13 +308,16 @@ Common mistakes in this project include:
 4. Creating one oversized action that does everything.
 5. Producing a log structure that does not match the user's request.
 6. Connecting a real model before the fake action flow is clear.
+7. Letting chunk summaries lose the user's original priorities.
 
 The best approach is to build the process one action at a time.
 
-## 13. Chapter summary
+## 15. Chapter summary
 
 The conversation log generator is the final template adaptation.
 
 You start with the same `game_framework_template.py`, create a new working file, rewrite the goals, define transcript-specific actions, store user priorities in memory, let the environment handle practical text operations, and test the process in stages.
 
 This chapter shows the full value of GAME: the `game/` package gives you structure, but the agent's behavior comes from how you design the goals, actions, memory, and environment in the copied agent file.
+
+It also shows that good AI work is not only about asking for output. It is about giving the model the right purpose, the right context, and the right process.

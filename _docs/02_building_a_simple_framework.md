@@ -2,30 +2,41 @@
 
 ## Table of Contents
 
-1. What this chapter is for
-2. Why the project is modular
-3. The files in the framework package
-4. The role of the template file
-5. What to edit when creating an agent
-6. What to leave stable at first
-7. How goals become prompt instructions
-8. How actions become model tools
-9. How memory shows the loop working
-10. How to test without a real model
-11. How `.env.example` fits into the project
-12. How to create a new agent from the template
-13. Common mistakes
-14. Chapter summary
+1. [What this chapter is for](#1-what-this-chapter-is-for)
+2. [Why the project is modular](#2-why-the-project-is-modular)
+3. [The AI reason behind each module](#3-the-ai-reason-behind-each-module)
+4. [The files in the framework package](#4-the-files-in-the-framework-package)
+5. [The role of the template file](#5-the-role-of-the-template-file)
+6. [What to edit when creating an agent](#6-what-to-edit-when-creating-an-agent)
+7. [What to leave stable at first](#7-what-to-leave-stable-at-first)
+8. [How goals become prompt instructions](#8-how-goals-become-prompt-instructions)
+9. [How actions become model tools](#9-how-actions-become-model-tools)
+10. [How memory becomes usable context](#10-how-memory-becomes-usable-context)
+11. [How language defines the response contract](#11-how-language-defines-the-response-contract)
+12. [How environment protects execution](#12-how-environment-protects-execution)
+13. [How to test without a real model](#13-how-to-test-without-a-real-model)
+14. [How `.env.example` fits into the project](#14-how-envexample-fits-into-the-project)
+15. [How to create a new agent from the template](#15-how-to-create-a-new-agent-from-the-template)
+16. [Common mistakes](#16-common-mistakes)
+17. [Chapter summary](#17-chapter-summary)
 
 ## 1. What this chapter is for
 
-Chapter 01 explained the GAME Framework.
+Chapter 01 explained why AI agents need structure.
 
-This chapter explains how the project is organized in code.
+This chapter explains how that structure appears in code.
 
-The important change is that the framework is now modular. The reusable classes live in the `game/` package, while `game_framework_template.py` is a small editable starter file.
+The important idea is that the framework is modular because an agent has several different responsibilities. If all of those responsibilities are mixed into one file, it becomes harder to understand what the model is doing, what the program is doing, and where safety rules should live.
 
-That separation makes the guide easier to study because the reader can see the difference between framework code and agent-specific code.
+The reusable classes live in the `game/` package.
+
+The editable starter agent lives in:
+
+```text
+game_framework_template.py
+```
+
+That separation makes the guide easier to study because you can see the difference between framework code and agent-specific code.
 
 ## 2. Why the project is modular
 
@@ -39,9 +50,30 @@ The modular version solves that by separating responsibilities:
 2. `game_framework_template.py` shows how to assemble one agent.
 3. Exercise files copy the template and change the agent-specific pieces.
 
-This structure matches the GAME idea itself: each part has a clear responsibility.
+This structure is not only cleaner Python. It also matches how AI agents need to be designed.
 
-## 3. The files in the framework package
+A model needs instructions, tool descriptions, memory, response format, and execution boundaries. Each module helps represent one of those needs clearly.
+
+## 3. The AI reason behind each module
+
+The framework modules are not arbitrary.
+
+Each one answers a practical AI design question:
+
+| AI design question | Module | Why it exists |
+|---|---|---|
+| What should the model try to achieve? | `goals.py` | Stores purpose and behavior instructions |
+| What can the model request? | `actions.py` | Defines tools and their argument schemas |
+| What happened already? | `memory.py` | Stores previous requests, decisions, and results |
+| How should the prompt and response be shaped? | `language.py` | Builds the model prompt and parses structured output |
+| Where do actions actually run? | `environment.py` | Executes or rejects tool calls |
+| How does the repeated process run? | `agent.py` | Coordinates the loop |
+
+This is the central bridge between AI theory and the framework.
+
+The model is not magic. It needs information arranged in a useful way. The `game/` package gives us that arrangement.
+
+## 4. The files in the framework package
 
 The reusable framework lives in:
 
@@ -75,7 +107,7 @@ Each module has one job:
 
 In the exercises, you will usually import from `game` instead of editing these files.
 
-## 4. The role of the template file
+## 5. The role of the template file
 
 The starter file is:
 
@@ -96,11 +128,11 @@ Then it defines:
 3. `build_template_agent()`.
 4. A small `__main__` block for running the file.
 
-That means the template is no longer the entire framework. It is a small example agent that uses the framework.
+That means the template is not the entire framework. It is a small example agent that uses the framework.
 
 This is exactly what the later exercises need.
 
-## 5. What to edit when creating an agent
+## 6. What to edit when creating an agent
 
 When creating a new agent, copy `game_framework_template.py` into a new file.
 
@@ -122,7 +154,9 @@ Then change the agent-specific parts:
 
 Those changes are enough to build the first version of each exercise agent.
 
-## 6. What to leave stable at first
+This is important because it teaches a real agent design habit: you do not rewrite the whole system every time. You change the context, tools, memory needs, and environment rules.
+
+## 7. What to leave stable at first
 
 At the beginning, avoid changing the framework package.
 
@@ -138,7 +172,7 @@ Later, you may improve them, especially when building stricter environments or m
 
 But while learning the basic pattern, the point is to see how much you can achieve by changing only the copied agent file.
 
-## 7. How goals become prompt instructions
+## 8. How goals become prompt instructions
 
 Inside the template builder function, the agent creates a list of `Goal` objects.
 
@@ -156,7 +190,11 @@ Do not edit files without approval.
 
 That goal can guide the model toward `request_approval` before `apply_change`.
 
-## 8. How actions become model tools
+The theory behind this is simple: a model can only follow instructions that are actually present in the context it receives.
+
+If a safety rule is not in the prompt and not enforced by the environment, the agent is more likely to behave unpredictably.
+
+## 9. How actions become model tools
 
 An action starts as a normal Python function.
 
@@ -184,7 +222,9 @@ to the actual Python function.
 
 If the function exists but is not registered, the agent cannot use it.
 
-## 9. How memory shows the loop working
+This matters because an AI model cannot safely improvise access to your system. The framework must describe the available tools clearly.
+
+## 10. How memory becomes usable context
 
 Memory is the easiest way to see the agent loop working.
 
@@ -194,11 +234,66 @@ After a run, memory should contain:
 2. The model response.
 3. The environment result.
 
-The template prints final memory at the end so the student can inspect what happened.
-
 When learning, this output matters. It shows how the agent moves from request to decision to result.
 
-## 10. How to test without a real model
+Memory is also how the agent avoids acting as if every step is the first step.
+
+For example, if the model already called `list_files`, the next prompt can include that result. Then the model can choose `read_file` instead of listing files again.
+
+This is not the same as assuming the model remembers everything internally. The program stores useful state and shows it to the model when needed.
+
+## 11. How language defines the response contract
+
+The language layer builds the prompt and parses the model response.
+
+In this project, the model is expected to return JSON:
+
+```json
+{
+  "tool": "terminate",
+  "args": {
+    "message": "Task complete."
+  }
+}
+```
+
+This response contract is necessary because the program needs to understand the model's output.
+
+If the model returns a normal paragraph, the framework may not know which action to execute.
+
+The language layer gives the model a clear format:
+
+```text
+Choose one tool.
+Return valid JSON.
+Include arguments under `args`.
+```
+
+This is one of the most practical lessons in agent design: useful AI systems often depend on structured outputs, not just fluent text.
+
+## 12. How environment protects execution
+
+The environment is where selected actions actually run.
+
+The model can request an action, but the environment should decide whether that action is allowed.
+
+For a simple template, the default environment can execute registered actions directly.
+
+For safer agents, the environment should become stricter.
+
+Examples:
+
+1. A file explorer environment can block paths outside the project.
+2. A code reviewer environment can block edits without approval.
+3. A transcript processor environment can reject empty transcripts.
+4. A command-running environment can require human confirmation.
+
+This separation is a major AI safety pattern.
+
+The model proposes the next step.
+The system controls execution.
+
+## 13. How to test without a real model
 
 The template includes a fake `generate_response()` function.
 
@@ -221,7 +316,9 @@ When building the exercise agents, change this fake response several times to te
 
 This separates framework debugging from model behavior.
 
-## 11. How `.env.example` fits into the project
+That separation matters because real models introduce uncertainty. If the code is already confusing before the model is connected, debugging becomes much harder.
+
+## 14. How `.env.example` fits into the project
 
 The template does not need real API credentials while you are testing fake responses.
 
@@ -246,7 +343,7 @@ The real `.env` file should not be committed. It may contain secrets such as API
 
 At this stage of the guide, the most important rule is simple: get the fake `generate_response()` flow working first, then add real provider configuration.
 
-## 12. How to create a new agent from the template
+## 15. How to create a new agent from the template
 
 The repeatable process is:
 
@@ -263,7 +360,7 @@ The repeatable process is:
 
 That is the workflow used by the exercises in the next chapters.
 
-## 13. Common mistakes
+## 16. Common mistakes
 
 Common mistakes include:
 
@@ -274,16 +371,19 @@ Common mistakes include:
 5. Ignoring memory output.
 6. Treating goals as comments instead of prompt instructions.
 7. Putting real API keys in `.env.example`.
+8. Letting the model's text output be too free-form for the program to parse.
 
 Most early bugs come from mismatches between the action function, the action schema, and the JSON returned by the model.
 
-## 14. Chapter summary
+## 17. Chapter summary
 
 The project now has two layers.
 
 The `game/` package contains the reusable framework.
 
 The `game_framework_template.py` file contains a small example agent that imports and uses that framework.
+
+The modules exist because AI agents need separate pieces for instructions, tools, memory, response format, execution, and loop control.
 
 The `.env.example` file documents provider configuration without exposing private values.
 
