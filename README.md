@@ -22,24 +22,27 @@ Change the GAME components to create different agents.
 
 ---
 
-## What this template includes
+## Project structure
 
-The file `game_framework_template.py` includes:
+The reusable framework lives in the `game/` package:
 
 ```text
-Goal
-Action
-ActionRegistry
-Memory
-Environment
-AgentLanguage
-JsonAgentLanguage
-Agent
-generate_response()
-build_template_agent()
+game/
+  goals.py
+  actions.py
+  memory.py
+  environment.py
+  language.py
+  agent.py
 ```
 
-Each component has a clear responsibility:
+The editable starter file is:
+
+```text
+game_framework_template.py
+```
+
+The framework modules provide the reusable GAME pieces:
 
 | Component | Purpose |
 |---|---|
@@ -51,7 +54,7 @@ Each component has a clear responsibility:
 | `AgentLanguage` | Builds prompts and parses model responses |
 | `Agent` | Runs the reusable agent loop |
 
-The chapter files under `_docs/` are guided builds. They show how to edit the template step by step to create each agent.
+The template imports those pieces and shows how to assemble one runnable agent. The chapter files under `_docs/` are guided builds. They show how to copy and edit the template step by step to create each agent.
 
 ---
 
@@ -74,11 +77,21 @@ From the project root:
 ```bash
 python -m venv .venv
 ```
+Or:
+
+```bash
+py -m venv .venv
+```
 
 Activate the virtual environment:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
+```
+Or:
+
+```cmd
+.\.venv\Scripts\activate
 ```
 
 Install the requirements:
@@ -88,6 +101,14 @@ pip install -r requirements.txt
 ```
 
 If your system uses `py` instead of `python`, replace the command accordingly.
+
+Create your local environment file when you are ready to connect a real model provider:
+
+```bash
+copy .env.example .env
+```
+
+The example file documents values such as `OPENAI_API_KEY`, `SERVER_URL`, `MODEL_PROVIDER`, and `MODEL_NAME`. Keep real secrets in `.env`, not in `.env.example`.
 
 ---
 
@@ -112,8 +133,8 @@ The study flow is:
 ```text
 1. Read the chapter
 2. Study the example
-3. Copy the template into a new exercise file
-4. Modify one GAME component at a time
+3. Copy `game_framework_template.py` into a new exercise file
+4. Modify one GAME component at a time in that exercise file
 5. Run the agent and inspect the output
 6. Observe memory to understand the loop
 ```
@@ -133,6 +154,8 @@ To create a new agent, you usually only need to change:
 ```
 
 You normally should not need to change the `Agent.run()` loop.
+
+In the modular version, `Agent.run()` lives in `game/agent.py`. Most exercises should leave it alone and work in the copied agent file instead.
 
 ---
 
@@ -256,4 +279,10 @@ Main template:
 
 ```text
 game_framework_template.py
+```
+
+Framework package:
+
+```text
+game/
 ```

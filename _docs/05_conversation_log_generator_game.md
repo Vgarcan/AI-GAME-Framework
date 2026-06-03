@@ -58,7 +58,7 @@ You will adapt the same parts as before:
 4. The fake `generate_response()` function.
 5. The initial `user_input`.
 
-The `Agent.run()` loop should still remain stable.
+The `Agent.run()` loop from `game/agent.py` should still remain stable.
 
 ## 4. Step 2: rewrite the goals for transcript processing
 
@@ -169,7 +169,7 @@ Then test `draft_log`.
 
 Then test `finalize_log`.
 
-Only after the flow works with fake responses should you connect a real model.
+Only after the flow works with fake responses should you connect a real model. When that moment comes, copy `.env.example` to `.env` and fill in the provider settings you need.
 
 A good first user input is:
 
@@ -208,7 +208,7 @@ In this agent:
 4. Environment handles loading, chunking, and saving.
 5. The loop coordinates extraction, drafting, revision, and finalization.
 
-The same template still works, but the design choices are more subtle.
+The same modular template still works, but the design choices are more subtle.
 
 ## 12. Common mistakes
 
@@ -229,4 +229,4 @@ The conversation log generator is the final template adaptation.
 
 You start with the same `game_framework_template.py`, create a new working file, rewrite the goals, define transcript-specific actions, store user priorities in memory, let the environment handle practical text operations, and test the process in stages.
 
-This chapter shows the full value of GAME: the framework gives you structure, but the agent's behavior comes from how you design the goals, actions, memory, and environment.
+This chapter shows the full value of GAME: the `game/` package gives you structure, but the agent's behavior comes from how you design the goals, actions, memory, and environment in the copied agent file.

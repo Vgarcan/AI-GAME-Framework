@@ -22,13 +22,21 @@ This guide teaches how to build simple AI agents using the **GAME Framework**.
 
 It is written for a reader who already knows basic Python: functions, classes, lists, dictionaries, and modules. It does not assume that the reader already knows how to design agents.
 
-The project includes a reusable file called:
+The project includes a reusable framework package:
+
+```text
+game/
+```
+
+It also includes a starter file called:
 
 ```text
 game_framework_template.py
 ```
 
-The goal of the guide is to help you understand that template, then modify it step by step to build different agents.
+The goal of the guide is to help you understand the framework package, then copy and modify the template step by step to build different agents.
+
+At first, the examples use fake model responses. Later, when you connect a real provider, the project uses `.env.example` as the safe starting point for local configuration.
 
 ## 2. What you are going to practice
 
@@ -41,6 +49,7 @@ The exercises in this guide are not separate random examples. They all follow th
 5. Decide what the agent should remember.
 6. Let the environment execute actions.
 7. Run the loop and inspect the result.
+8. Connect a real model only after the fake response flow works.
 
 This repeated process is the point of the guide.
 
@@ -121,7 +130,7 @@ Help the user.
 
 The second goal is too vague. The first one tells the agent what kind of work it should do.
 
-In the template, goals are stored as `Goal` objects with:
+In the framework, goals are stored as `Goal` objects with:
 
 ```text
 priority
@@ -154,7 +163,7 @@ Each action has:
 
 Actions are important because they control what the agent is allowed to attempt.
 
-In the exercises, you will create new Python functions and register them as actions in the template.
+In the exercises, you will create new Python functions in the copied agent file and register them as actions.
 
 ## 8. Memory
 
@@ -207,7 +216,7 @@ The basic flow is:
 8. The result is stored in memory.
 9. The loop continues until a terminal action is selected.
 
-This loop is already implemented in the template.
+This loop is already implemented in `game/agent.py`.
 
 The exercises are designed so that you usually do not edit the loop. Instead, you change the GAME components around it.
 
@@ -230,9 +239,9 @@ The structure remains familiar each time.
 
 ## 12. How this guide uses the template
 
-The guide uses `game_framework_template.py` as the base implementation.
+The guide uses `game/` as the reusable framework and `game_framework_template.py` as the starter agent.
 
-Chapter 02 explains the template itself.
+Chapter 02 explains the modular structure.
 
 Chapters 03, 04, and 05 show how to copy the template into a new exercise file and adapt it for a specific agent.
 
@@ -240,7 +249,7 @@ That means each exercise is both conceptual and practical:
 
 1. You learn what the agent should do.
 2. You identify which GAME components need to change.
-3. You edit the template.
+3. You edit the copied agent file.
 4. You run the agent.
 5. You inspect the output and memory.
 
@@ -250,7 +259,7 @@ This repetition is what helps the concepts become natural.
 
 GAME is a way to build agents by separating goals, actions, memory, and environment.
 
-The template gives you a reusable loop.
+The framework package gives you a reusable loop.
 
 The exercises teach you how to keep that loop stable while changing the components around it.
 

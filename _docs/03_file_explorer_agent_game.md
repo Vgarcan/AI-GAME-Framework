@@ -30,7 +30,7 @@ The purpose is not to create a perfect filesystem assistant. The purpose is to p
 
 ## 2. How this exercise uses the template
 
-The template already contains the framework:
+The template imports the framework from the `game/` package:
 
 ```text
 Goal
@@ -52,7 +52,7 @@ Instead, you adapt these parts:
 4. The fake `generate_response()` function used for testing.
 5. The `user_input` inside the `__main__` block.
 
-The `Agent.run()` method should stay the same.
+The `Agent.run()` method in `game/agent.py` should stay the same.
 
 ## 3. Step 1: copy the template as a working file
 
@@ -66,7 +66,7 @@ file_explorer_agent.py
 
 Then copy the contents of `game_framework_template.py` into that file.
 
-This gives you a safe place to modify the agent while preserving the base template for later exercises.
+This gives you a safe place to modify the agent while preserving the base template and the reusable `game/` package.
 
 ## 4. Step 2: rewrite the goals
 
@@ -140,7 +140,7 @@ For this first version, the default `Environment` class is enough. Later, you ca
 
 ## 8. Step 6: update the fake model response
 
-The template uses `generate_response()` as a fake model call.
+The copied agent file uses `generate_response()` as a fake model call.
 
 This is useful while learning because you can test the framework without connecting a real LLM.
 
@@ -204,7 +204,7 @@ The key lesson is that you created a new agent mostly by changing the components
 
 Common mistakes in this exercise include:
 
-1. Editing `Agent.run()` too early.
+1. Editing `game/agent.py` too early.
 2. Forgetting to register a new action.
 3. Giving `read_file` a schema that does not match the function argument.
 4. Trying to test every action at once.
@@ -216,6 +216,6 @@ Keep the first version small. Once the basic loop works, safety and extra action
 
 The file explorer agent is the first full template adaptation.
 
-You start with `game_framework_template.py`, copy it into a new exercise file, rewrite the goals, add filesystem action functions, register those actions, test fake model responses, and inspect memory.
+You start with `game_framework_template.py`, copy it into a new exercise file, rewrite the goals, add filesystem action functions, register those actions, test fake model responses, and inspect memory. The reusable framework stays in `game/`.
 
 That process is the central habit of this guide: use GAME to understand what changes and what stays stable.

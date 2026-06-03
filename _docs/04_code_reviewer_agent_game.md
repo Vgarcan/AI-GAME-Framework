@@ -38,7 +38,7 @@ The code reviewer adds a new pattern:
 inspect -> propose -> wait for approval -> apply -> verify -> stop
 ```
 
-You are still using the same template structure. The difference is that the goals, actions, memory, and environment now need stricter rules.
+You are still using the same modular structure. The reusable loop lives in `game/`, while the copied agent file defines the review-specific goals, actions, and tests.
 
 ## 3. Step 1: create a new working file
 
@@ -145,7 +145,7 @@ This is where many early bugs happen. If `apply_change` expects `file_name` but 
 
 ## 8. Step 6: use memory to track review state
 
-The template already stores memory entries for the user request, model response, and environment result.
+The reusable agent loop already stores memory entries for the user request, model response, and environment result.
 
 For the code reviewer, pay attention to what needs to be remembered:
 
@@ -212,7 +212,7 @@ A good run should show:
 
 This exercise teaches how GAME handles risk.
 
-The same framework can support a simple file explorer and a more careful code reviewer because the loop is stable and the components change.
+The same framework package can support a simple file explorer and a more careful code reviewer because the loop is stable and the components change.
 
 In this agent:
 
@@ -229,7 +229,7 @@ Common mistakes in this exercise include:
 1. Letting `apply_change` run without approval.
 2. Mixing proposal and editing into one action.
 3. Forgetting to update the action schema.
-4. Editing `Agent.run()` instead of changing actions and environment.
+4. Editing `game/agent.py` instead of changing actions and environment.
 5. Testing the whole workflow at once instead of one action at a time.
 
 The safest approach is to build the workflow gradually and inspect memory after each step.
@@ -238,6 +238,6 @@ The safest approach is to build the workflow gradually and inspect memory after 
 
 The code reviewer agent is the second template adaptation.
 
-You start with the same GAME template, keep the reusable loop, add review-specific goals, separate read actions from write actions, register proposal and approval tools, and use memory plus environment rules to prevent unsafe edits.
+You start with the same GAME template, keep the reusable loop from `game/`, add review-specific goals, separate read actions from write actions, register proposal and approval tools, and use memory plus environment rules to prevent unsafe edits.
 
 This is where the framework starts to feel more powerful: the same core structure can support very different agents when the GAME components are designed carefully.
