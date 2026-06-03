@@ -12,7 +12,7 @@
 
 This file is the navigation point for the study guide.
 
-The repository has grown from a simple learning template into a small Python project with framework code, examples, tests, dependency files, and project configuration.
+The repository has grown from a simple learning template into a small Python project with framework code, examples, tests, dependency files, provider configuration, and project configuration.
 
 Because of that, the documentation now has two jobs:
 
@@ -29,6 +29,7 @@ Read the chapters in this order:
 4. [Building a Code Reviewer Agent](04_code_reviewer_agent_game.md)
 5. [Building a Conversation Log Generator](05_conversation_log_generator_game.md)
 6. [Professional Project Workflow for the GAME Framework](06_professional_project_workflow.md)
+7. [Model Provider Selection](07_model_provider_selection.md)
 
 ## 3. How the documentation is organised
 
@@ -54,6 +55,16 @@ It explains:
 5. Code quality tools.
 6. Documentation alignment.
 7. Safe next improvements.
+
+Chapter 07 focuses on model provider configuration.
+
+It explains:
+
+1. Why `MODEL_PROVIDER=fake` is the default.
+2. Why fake provider selection is not the same thing as debug mode.
+3. How `SHOW_MODEL_PROMPT` works.
+4. How `.env.example` documents provider settings.
+5. What remains to be implemented before real providers are connected.
 
 ## 4. How to use the code while reading
 
